@@ -6,8 +6,8 @@ classdef svm
             tic;
             mainDir = fullfile(dbDir, 'ALL_IDB2');
             imagesDir = fullfile(mainDir, 'img');
-            labelsDir = fullfile(mainDir, 'gt_cn');
-
+            labelsDir = fullfile(mainDir, 'gt');
+            
             images = dir(fullfile(imagesDir, '*.tif'));
             labels = dir(fullfile(labelsDir, '*.tif'));
 
@@ -35,7 +35,7 @@ classdef svm
                 end
             end
 
-            % Si itera finché non si sono campionati tutti i pixel delle 
+            % Si itera finchï¿½ non si sono campionati tutti i pixel delle 
             % immagini prese in considerazione per formare il dataset.    
             nF = [];
             cF = [];
@@ -48,8 +48,12 @@ classdef svm
                 R = I(:,:,1);
                 G = I(:,:,2);
                 B = I(:,:,3); 
+                [Fext,f]=getVEF('',I);
+                u=Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
+                v=Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
 
-                temp = [R(:), G(:), B(:)];
+                
+                temp = [R(:), G(:), B(:), u(:), v(:)];
 
                 nF = [nF; temp( L(:,:,1)==0 & L(:,:,2)==255, : )];    
                 cF = [cF; temp( L(:,:,1)==0 & L(:,:,2)==0, : )];    
