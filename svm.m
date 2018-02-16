@@ -6,7 +6,7 @@ classdef svm
             tic;
             mainDir = fullfile(dbDir, 'ALL_IDB2');
             imagesDir = fullfile(mainDir, 'img');
-            labelsDir = fullfile(mainDir, 'gt');
+            labelsDir = fullfile(mainDir, 'gt_cn');
             
             images = dir(fullfile(imagesDir, '*.tif'));
             labels = dir(fullfile(labelsDir, '*.tif'));
@@ -45,30 +45,17 @@ classdef svm
                 I = im2double( imread( fullfile(imagesDir, images(count).name) ) );      % immagine originale
                 L = imread( fullfile(labelsDir, labels(count).name) );      % immagine con WBC citoplasma e nucleo segmentato
 
-                R = I(:,:,1);
-                G = I(:,:,2);
-                B = I(:,:,3); 
-                [Fext,f]=getVEF('',I);
-                u=Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
-                v=Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
-
-                
-                temp = [R(:), G(:), B(:), u(:), v(:)];
+                temp = featureExtraction(I);
 
                 nF = [nF; temp( L(:,:,1)==0 & L(:,:,2)==255, : )];    
                 cF = [cF; temp( L(:,:,1)==0 & L(:,:,2)==0, : )];    
                 eF = [eF; temp( L(:,:,1)==255, :)];     
-
-
             end
 
-            trainingFeatures = nF;
-            trainingLabels = cF;
-
             % Duplicates removal
-            [nF, ~, iFV] = unique(nF, 'rows'); 
-            [cF, ~, iFV] = unique(cF, 'rows'); 
-            [eF, ~, iFV] = unique(eF, 'rows'); 
+            [nF, ~, ~] = unique(nF, 'rows'); 
+            [cF, ~, ~] = unique(cF, 'rows'); 
+            [eF, ~, ~] = unique(eF, 'rows'); 
 
             [nRS, cRS, eRS] = randomSample(nF, cF, eF, trainingSetPixels);
             nL = ones( size(nRS,1), 1 ); nL(:) = 3;
@@ -77,7 +64,6 @@ classdef svm
 
             trainingFeatures = double(vertcat(nRS, cRS, eRS));
             trainingLabels = vertcat(nL, cL, eL);
-
 
             disp('Time occured for getTrainingSamples: ');
 
