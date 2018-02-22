@@ -1,6 +1,7 @@
 function featVect = featureExtraction(RGB)
 
 featVect = [colorExtraction(RGB, 'RGB')];
+featVect = [featVect VEFExtraction(RGB)];
 
 %--------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ end
 
 featVect = [];
 for i = 1:size(img, 3)
-    imgi = img(:,:,1);
+    imgi = img(:,:,i);
     featVect = [featVect, imgi(:)];
 end
 
@@ -48,10 +49,10 @@ end
 
 function featVect = VEFExtraction(I)
 
-[Fext,~]=getVEF('',I);
-u=Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
-v=Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
-angle=atan2(-v,u)*180/pi;
-angle=angle+180;
-featVect=round(angle);
+[Fext,~] = getVEF('',I);
+u = Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
+v = Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
+angle = atan2(-v,u)*180/pi;
+angle = angle+180;
+featVect = round(angle);
 featVect = featVect(:);
