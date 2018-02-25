@@ -1,7 +1,7 @@
 function featVect = featureExtraction(RGB)
 
 featVect = [colorExtraction(RGB, 'RGB')];
-featVect = [featVect VEFExtraction(RGB)];
+featVect = [featVect VEFExtraction(RGB).*0];
 
 %--------------------------------------------------------------------------
 

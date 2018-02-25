@@ -1,8 +1,9 @@
-function [ nRS, cRS, eRS ] = randomSample( nF, cF, eF, n )
+function [ nRS, cRS, eRS, edRS ] = randomSample( nF, cF, eF, edF , n )
 
-    nRS = datasample(nF, n/3);
-    cRS = datasample(cF, n/3);
-    eRS = datasample(eF, n/3);
+    nRS = datasample(nF, n/4);
+    cRS = datasample(cF, n/4);
+    eRS = datasample(eF, n/4);
+    edRS = datasample(edF, n/4);
     
 end
 

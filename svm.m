@@ -40,33 +40,46 @@ classdef svm
             nF = [];
             cF = [];
             eF = [];
+            edF = [];
             for count = trainingImagesIds
 
                 I = im2double( imread( fullfile(imagesDir, images(count).name) ) );      % immagine originale
                 L = imread( fullfile(labelsDir, labels(count).name) );      % immagine con WBC citoplasma e nucleo segmentato
-
+                LGray=rgb2gray(L);
+                [Fext,~] = getVEF('',L);
+                u = Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
+                v = Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
+                angle = atan2(-v,u)*180/pi;
+                angle = angle+180;
+                featVect = round(angle);
+                featVect = featVect(:);
                 temp = featureExtraction(I);
+                
 
                 nF = [nF; temp( L(:,:,1)==0 & L(:,:,2)==255, : )];    
                 cF = [cF; temp( L(:,:,1)==0 & L(:,:,2)==0, : )];    
-                eF = [eF; temp( L(:,:,1)==255, :)];      
+                eF = [eF; temp( L(:,:,1)==255, :)];
+                edF = [edF; featVect];
+                
+                
                 
             end
+            edF = [zeros(size(edF,1), 3),edF];
             
             % Duplicates removal
             [nF, ~, ~] = unique(nF, 'rows'); 
             [cF, ~, ~] = unique(cF, 'rows'); 
             [eF, ~, ~] = unique(eF, 'rows'); 
-
-            [nRS, cRS, eRS] = randomSample(nF, cF, eF, trainingSetPixels);
+            [edF, ~, ~] = unique(edF, 'rows');
+            [nRS, cRS, eRS, edRS] = randomSample(nF, cF, eF, edF , trainingSetPixels);
             nL = ones( size(nRS,1), 1 ); nL(:) = 3;
             cL = ones( size(cRS,1), 1 ); cL(:) = 2;
             eL = ones( size(eRS,1), 1 );
+            edL = ones( size(edRS,1), 1 ); edL(:) = 4;
 
-            trainingFeatures = double(vertcat(nRS, cRS, eRS));
-            trainingLabels = vertcat(nL, cL, eL);
-            
-            trainingFeatures = trainingFeatures(:, 4);
+            trainingFeatures = double(vertcat(nRS, cRS, eRS, edRS));
+            trainingLabels = vertcat(nL, cL, eL, edL);
+%             trainingFeatures = trainingFeatures(:,[1 4]);
 
             disp('Time occured for getTrainingSamples: ');
 
