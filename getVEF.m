@@ -16,11 +16,10 @@ imageGrayDouble =imageGrayDouble/maxvalue;
 
 % edge dell'immagine da passare al campo vettoriale. Il parametro varia tra
 % lo 0.05 e 0.07 dipende dal grado di rumorosit� dell'immagine
-f = edge(imageGrayDouble,'log');
-
+f = edge(imageGrayDouble,'Sobel');
 % clcolo il kernel del campo vettorile. Tieni valore fisso 1.8 per non
 % andare a creare artefatti nel risultato finale
-K = AM_VFK(2, ry,'power', 1.8);
+K = AM_VFK(2, ry*4,'power', 1.2);
 % calcolo il campo vettoriale
 Fext = AM_VFC(f, K, 1,'auto');
 
