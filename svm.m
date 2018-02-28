@@ -395,7 +395,7 @@ classdef svm
                     disp(model{i})
                 end
             else
-                model=svmtrain(training,groupnames,varargin{:});
+                model=svmtrain(training,groupnames,'method', 'QP', varargin{:});
                 fprintf('\nx Two class svm  Model--->\n')
                 disp(model)
             end

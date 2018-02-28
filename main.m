@@ -58,5 +58,5 @@ VFCprediction = VFCprediction(iFV_vfc);
 p_vfc = reshape(VFCprediction, size(I,1), size(I,2));
 %figure(), imshow(I);
 figure(), imshow(p_rgb);
-[~,dir]=imgradient(~uint8(p_vfc));
-figure(), imshow(dir);
+%[~,dir]=imgradient(~uint8(p_vfc));
+figure(), imshow(p_vfc);

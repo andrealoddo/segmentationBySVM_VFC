@@ -60,24 +60,8 @@ u = Fext(:,:,1)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
 v = Fext(:,:,2)./sqrt(Fext(:,:,1).*Fext(:,:,1) + Fext(:,:,2).*Fext(:,:,2));
 angle = atan2(-v,u)*180/pi;
 angle = angle+180;
-angle = round(angle);
-% applicare filtro media 3x3 e recuperare il valore medio dell'angolo per
-% ogni intorno
-%min = ordfilt2(angle, 1, true(3,3));
-%med = ordfilt2(angle, 5, true(3,3));
-%max = ordfilt2(angle, 9, true(3,3));
-lbp = im2lbp(rgb2gray(I), 1, 8, 'ri');
-lbp = padarray(lbp, [1 1], 'replicate', 'both');
-lbp = im2double(lbp);
 
 
-%min = round(min);
-%med = round(med);
-%max = round(max);
-%lbp = round(lbp);
 
-%featVect = featVect(:);
-
-%featVect = horzcat(angle(:), min(:), med(:), max(:));
-featVect = horzcat(angle(:), lbp(:));
-%featVect = angle(:);
+featVect = round(angle);
+featVect = featVect(:);
