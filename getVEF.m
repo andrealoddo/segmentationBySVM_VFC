@@ -19,7 +19,7 @@ imageGrayDouble =imageGrayDouble/maxvalue;
 f = edge(imageGrayDouble,'Sobel');
 % clcolo il kernel del campo vettorile. Tieni valore fisso 1.8 per non
 % andare a creare artefatti nel risultato finale
-K = AM_VFK(2, ry*4,'power', 1.2);
+K = AM_VFK(2, ry,'power', 1.2);
 % calcolo il campo vettoriale
 Fext = AM_VFC(f, K, 1,'auto');
 

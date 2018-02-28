@@ -1,7 +1,7 @@
 classdef svm
     methods (Static)
-        function [trainingFeatures, trainingLabels] = getTrainingSamples( ...
-            classNumbers, datasetImages, trainingSetPixels, dbDir, opt )
+        function [trainingFeatures, trainingLabels] = getRGBTrainingSamples( ...
+                datasetImages, trainingSetPixels, dbDir, opt )
 
             tic;
             mainDir = fullfile(dbDir, 'ALL_IDB2');
@@ -45,7 +45,7 @@ classdef svm
                 I = im2double( imread( fullfile(imagesDir, images(count).name) ) );      % immagine originale
                 L = imread( fullfile(labelsDir, labels(count).name) );      % immagine con WBC citoplasma e nucleo segmentato
 
-                temp = featureExtraction(I);
+                temp = featureExtraction(I, 'rgb');
 
                 nF = [nF; temp( L(:,:,1)==0 & L(:,:,2)==255, : )];    
                 cF = [cF; temp( L(:,:,1)==0 & L(:,:,2)==0, : )];    
@@ -65,10 +65,83 @@ classdef svm
 
             trainingFeatures = double(vertcat(nRS, cRS, eRS));
             trainingLabels = vertcat(nL, cL, eL);
-            
-            trainingFeatures = trainingFeatures(:, 4);
 
-            disp('Time occured for getTrainingSamples: ');
+            disp('Time occured for getRGBTrainingSamples: ');
+
+            toc
+
+        end
+        
+        function [trainingFeatures, trainingLabels] = getVFCTrainingSamples( ...
+                datasetImages, trainingSetPixels, dbDir, opt )
+
+            tic;
+            mainDir = fullfile(dbDir, 'ALL_IDB2');
+            imagesDir = fullfile(mainDir, 'img');
+            labelsDir = fullfile(mainDir, 'gt_cn');
+            
+            images = dir(fullfile(imagesDir, '*.tif'));
+            labels = dir(fullfile(labelsDir, '*.tif'));
+
+            dim = 0;
+            trainingImagesIds = [];
+
+            skipImages = [7 8 11 21 32 34 35 44 47 50 76 77 87 89 91 95 97 100 109 111 113 114 116 118 119 120 121 125 127 128 130 175 176 183 184 208 226];
+
+            % ***** Preprocessing per allocazione strutture dati per il Training ******
+            if opt == 0
+                for countI = 1:datasetImages
+                        I = imread( fullfile(imagesDir, images(countI).name) );
+                        mul = size(I,1) * size(I,2);
+                        dim = dim + mul;
+                        trainingImagesIds = [trainingImagesIds countI];
+                end
+            else
+                for countI = 1:datasetImages
+                    if ~any(countI == skipImages)
+                        I = imread( fullfile(imagesDir, images(countI).name) );
+                        mul = size(I,1) * size(I,2);
+                        dim = dim + mul;
+                        trainingImagesIds = [trainingImagesIds countI];
+                    end
+                end
+            end
+
+            % Si itera finche' non si sono campionati tutti i pixel delle 
+            % immagini prese in considerazione per formare il dataset.    
+            edgeF = [];
+            backgroundF = [];
+            for count = trainingImagesIds
+
+                I = im2double( imread( fullfile(imagesDir, images(count).name) ) );      % immagine originale
+                L = imread( fullfile(labelsDir, labels(count).name) );      % immagine con WBC citoplasma e nucleo segmentato
+               
+                %gray = edge(rgb2gray(L),'Sobel');
+                BW = im2bw(L);
+                BW( L(:,:,1)==0 & L(:,:,2)==255 ) = 0;
+                BW( L(:,:,1)==0 & L(:,:,2)==0 ) = 0;
+                BW2 = bwperim(BW);
+
+                temp = featureExtraction(I, 'vfc');
+                %temp = reshape(temp, size(BW));
+                
+                edgeF = [edgeF; temp( BW2(:,:)==1, : )];
+                backgroundF = [backgroundF; temp( BW2(:,:)==0, : )];       
+
+            end
+            
+            % Duplicates removal
+            [edgeF, ~, ~] = unique(edgeF, 'rows'); 
+            [backgroundF, ~, ~] = unique(backgroundF, 'rows'); 
+
+            [edgeRS, backRS] = randomSampling(trainingSetPixels, edgeF, backgroundF);
+            edgeL = ones( size(edgeRS,1), 1 )*2;
+            backL = ones( size(backRS,1), 1 );
+
+            trainingFeatures = double(vertcat(edgeRS, backRS));
+            trainingLabels = vertcat(edgeL, backL);
+
+            disp('Time occured for getVFCTrainingSamples: ');
 
             toc
 

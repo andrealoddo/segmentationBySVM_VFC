@@ -1,7 +1,13 @@
-function featVect = featureExtraction(RGB)
+function featVect = featureExtraction(RGB, opt)
 
-featVect = [colorExtraction(RGB, 'RGB')];
-featVect = [featVect VEFExtraction(RGB)];
+switch opt
+    case 'rgb'
+        featVect = colorExtraction(RGB, 'RGB');
+    case 'vfc'
+        featVect = VEFExtraction(RGB);
+    otherwise
+        disp('error in featureExtraction. Please check the opt parameter.');
+end
 
 %--------------------------------------------------------------------------
 

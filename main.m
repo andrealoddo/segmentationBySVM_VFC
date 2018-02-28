@@ -1,32 +1,62 @@
 %% Import datasets
 I = im2double( imread( 'Im001_1.jpg' ) );
 %I = imresize(I, 0.25);
-testSet = featureExtraction(I);
-testSet = testSet(:,4);
-[featVectU,~,iFV] = unique((testSet),'rows') ;
 
-if exist(fullfile(pwd, 'Model.mat'), 'file') == 0
+%% SVM settings
+trainingImagesNumber = 73; % 73, 200, 260;
+trainingSetPixels = 1800;
+opt = 1;
+dbDir = ALL_IDB;
+
+rgbTestSet = featureExtraction(I, 'rgb');
+[featVectRGB,~,iFV_rgb] = unique((rgbTestSet),'rows') ;
+
+vfcTestSet = featureExtraction(I, 'vfc');
+[featVectVFC,~,iFV_vfc] = unique((vfcTestSet ),'rows') ;
+
+
+if exist(fullfile(pwd, 'RGB_Model.mat'), 'file') == 0
+
+    disp('training rgb started');
     
-    %% training set settings
-    classNumbers = 3; % Number of regions of interest
-    trainingImagesNumber = 100; % 73, 200, 260;
-    trainingSetPixels = 1800;
-    opt = 1;
-    dbDir = ALL_IDB;
-    
-    %% Sampling and training
-    [trainingSet, trainingClasses] = svm.getTrainingSamples( ...
-        classNumbers, trainingImagesNumber, trainingSetPixels, dbDir, opt );
+    %% SVM 1: RGB sampling from gt_cn and model training
+    [trainingSet, trainingClasses] = svm.getRGBTrainingSamples( ...
+        trainingImagesNumber, trainingSetPixels, dbDir, opt );
     trainingClasses = trainingClasses - 1;
     
-    %% SVM Classification
-    [Model, predicted] = svm.classify(trainingSet, trainingClasses, featVectU);
-    save('Model.mat', 'Model');
+    %% SVM 1 Classification
+    [RGB_Model, RGBprediction] = svm.classify(trainingSet, trainingClasses, featVectRGB);
+    save('RGB_Model.mat', 'RGB_Model');
+
 else
-    load('Model.mat');
-    predicted = svm.predict(Model, featVectU);
+    load('RGB_Model.mat');
+    RGBprediction = svm.predict(RGB_Model, featVectRGB);
 end
-predicted = predicted(iFV);
-p = reshape(predicted, size(I,1), size(I,2));
+
+if exist(fullfile(pwd, 'VFC_Mode.mat'), 'file') == 0
+    
+    disp('training vfc started');
+    
+    %% SVM 2: VFC sampling from gt_cn and model training
+    [trainingSet, trainingClasses] = svm.getVFCTrainingSamples( ...
+        trainingImagesNumber, trainingSetPixels, dbDir, opt );
+    trainingClasses = trainingClasses - 1;    
+    
+    %% SVM 2 Classification
+    [VFC_Model, VFCprediction] = svm.classify(trainingSet, trainingClasses, featVectVFC);
+    save('VFC_Model.mat', 'VFC_Model');
+    
+else    
+    load('VFC_Model.mat');
+    VFCprediction = svm.predict(VFC_Model, featVectVFC);
+end
+
+RGBprediction = RGBprediction(iFV_rgb);
+p_rgb = reshape(RGBprediction, size(I,1), size(I,2));
+
+VFCprediction = VFCprediction(iFV_vfc);
+p_vfc = reshape(VFCprediction, size(I,1), size(I,2));
 %figure(), imshow(I);
-figure(), imshow(p);
+figure(), imshow(p_rgb);
+[~,dir]=imgradient(~uint8(p_vfc));
+figure(), imshow(dir);
